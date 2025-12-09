@@ -1,13 +1,15 @@
+// lib/di/di.dart
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:verify_app/core/const/api_const.dart';
-
-final secureStorage = FlutterSecureStorage();
+import 'package:verify_app/features/auth/data/repositories/auth_repository.dart';
 
 final dio = Dio(
   BaseOptions(
     baseUrl: ApiConstants.baseUrl,
-    connectTimeout: Duration(seconds: ApiConstants.requestTimeoutSeconds),
-    receiveTimeout: Duration(seconds: ApiConstants.requestTimeoutSeconds),
+    connectTimeout: Duration(seconds: 10),
+    receiveTimeout: Duration(seconds: 10),
   ),
 );
+
+// Теперь передаём dio в AuthRepository
+final authRepository = AuthRepository(dio);

@@ -1,32 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:verify_app/di/di.dart';
+import 'package:verify_app/features/auth/bloc/auth_bloc.dart';
+import 'package:verify_app/routes/app_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    BlocProvider(
+      create: (_) => AuthBloc(authRepository),
+      child: const VerifyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VerifyApp extends StatelessWidget {
+  const VerifyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Verify',
       theme: ThemeData(),
-      home: const MyHomePage(),
+      routerConfig: AppRouter().config(),
+      debugShowCheckedModeBanner: false,
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
