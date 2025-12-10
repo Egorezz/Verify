@@ -26,6 +26,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
+  bool _isValidPin(String pin) {
+    return RegExp(r'^\d{4}$').hasMatch(pin);
+  }
+
   void _showValidationError() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -36,14 +40,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             Expanded(
               child: Text(
                 'Данные не валидны',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
         ),
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         margin: const EdgeInsets.all(16),
         elevation: 6,
       ),
@@ -54,7 +63,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (!_formKey.currentState!.validate() ||
         _pinCtrl.text != _pinRepeatCtrl.text ||
         !_isValidEmail(_loginCtrl.text) ||
-        _passwordCtrl.text.length < 6) {
+        _passwordCtrl.text.length < 6 ||
+        !_isValidPin(_pinCtrl.text)) {
       _showValidationError();
       return;
     }
@@ -91,8 +101,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   } else if (state is AuthFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red.shade400,
+                        content: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.white),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                state.message,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.red.shade600,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: const EdgeInsets.all(16),
+                        elevation: 6,
                       ),
                     );
                   }
@@ -156,9 +186,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                                 validator: (v) {
                                   if (v!.isEmpty) return 'Обязательно';
-                                  if (!_isValidEmail(v)) {
-                                    return 'Неверный формат email';
-                                  }
+                                  if (!_isValidEmail(v)) return 'Неверный формат email';
                                   return null;
                                 },
                               ),
@@ -196,8 +224,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 keyboardType: TextInputType.number,
                                 obscureText: true,
                                 maxLength: 4,
-                                validator: (v) =>
-                                    v!.length != 4 ? 'Введите 4 цифры' : null,
+                                validator: (v) {
+                                  if (v!.isEmpty) return 'Обязательно';
+                                  if (v.length != 4) return 'Введите 4 цифры';
+                                  if (!_isValidPin(v)) return 'Только цифры';
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
@@ -214,6 +246,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 keyboardType: TextInputType.number,
                                 obscureText: true,
                                 maxLength: 4,
+                                validator: (v) {
+                                  if (v!.isEmpty) return 'Обязательно';
+                                  if (v != _pinCtrl.text) return 'PIN не совпадает';
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 32),
                               if (state is AuthLoading)

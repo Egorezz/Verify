@@ -32,35 +32,26 @@ class AuthRepository {
         options: Options(
           contentType: Headers.jsonContentType,
           validateStatus: (status) {
-            // Принимаем 200 и 400 (чтобы обработать ошибки вручную)
             return status == 200 || status == 400;
           },
         ),
       );
 
-      // 🔑 Ключевое: сначала смотрим на статус
       if (response.statusCode == 200) {
-        // Успех: тело = "Success"
         if (response.data == "Success") {
-          // Продолжаем на вход
         } else {
-          print('Неожиданный ответ при 200: ${response.data}');
           return false;
         }
       } else if (response.statusCode == 400) {
-        // Ошибка валидации: дубль email/логина
         final message = response.data is String
             ? response.data
             : 'Ошибка регистрации';
         print('Ошибка от сервера: $message');
-        // Можно показать пользователю: ScaffoldMessenger.of(...).showSnackBar(Text(message));
         return false;
       } else {
-        print('Неожиданный статус: ${response.statusCode}');
         return false;
       }
 
-      // ---- Вход для получения JWT ----
       final signinResponse = await _dio.post(
         '/auth/signin',
         data: {'username': name, 'pin': pin},
@@ -73,22 +64,19 @@ class AuthRepository {
       if (signinResponse.statusCode == 200) {
         final jwtToken = signinResponse.data;
         if (jwtToken is String) {
-          // Сохраняем всё
           final pinHash = PinHasher.hash(pin);
           await _storage.write(key: _keyPinHash, value: pinHash);
           await _storage.write(key: _keyJwtToken, value: jwtToken);
           await _storage.write(key: _keyName, value: name);
           await _storage.write(key: _keyLogin, value: login);
           await _storage.write(key: _keyIsRegistered, value: 'true');
-          print(_storage);
           return true;
         }
       } else if (signinResponse.statusCode == 401) {
         print('Неверный пароль при входе');
       }
       return false;
-    } catch (e, stack) {
-      print('❌ Сетевая ошибка: $e\n$stack');
+    } catch (e) {
       return false;
     }
   }
@@ -109,5 +97,25 @@ class AuthRepository {
 
   Future<bool> isRegistered() async {
     return await _storage.read(key: _keyIsRegistered) == 'true';
+  }
+
+  Future<String?> getUserId() async {
+    final token = await getAuthToken();
+    if (token == null) return null;
+
+    try {
+      final response = await _dio.get(
+        '/secured/id',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        final userId = response.data;
+        return userId?.toString();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 }

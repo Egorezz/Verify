@@ -9,11 +9,11 @@ class ScanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade400, Colors.blue.shade700],
+            colors: [Color(0xFF6C5CE7), Color(0xFF8B7CE7)],
           ),
         ),
         child: SafeArea(
@@ -34,10 +34,10 @@ class ScanScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.qr_code_scanner_rounded,
                     size: 120,
-                    color: Colors.blue.shade600,
+                    color: Color(0xFF6C5CE7),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -75,7 +75,7 @@ class ScanScreen extends StatelessWidget {
                   label: const Text('Начать сканирование'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.blue.shade700,
+                    foregroundColor: const Color(0xFF6C5CE7),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 16,
