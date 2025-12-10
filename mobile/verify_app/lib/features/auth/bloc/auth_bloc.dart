@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:verify_app/features/auth/bloc/auth_event.dart';
 import 'package:verify_app/features/auth/bloc/auth_state.dart';
 import 'package:verify_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:verify_app/notification_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
@@ -24,6 +25,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         pin: event.pin,
       );
       if (success) {
+        try {
+          await NotificationService.showRegistrationSuccess(event.name);
+        } catch (e) {
+          // Игнорируем ошибки уведомлений
+        }
         emit(AuthSuccess('Регистрация успешна'));
       } else {
         emit(AuthFailure('Ошибка регистрации'));
@@ -95,4 +101,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthFailure('Ошибка проверки данных'));
     }
   }
+
+
 }

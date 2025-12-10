@@ -38,8 +38,7 @@ class AuthRepository {
       );
 
       if (response.statusCode == 200) {
-        if (response.data == "Success") {
-        } else {
+        if (response.data != "Success") {
           return false;
         }
       } else if (response.statusCode == 400) {

@@ -4,9 +4,11 @@ import 'package:verify_app/di/di.dart';
 import 'package:verify_app/features/auth/bloc/auth_bloc.dart';
 import 'package:verify_app/features/verification/bloc/verification_bloc.dart';
 import 'package:verify_app/routes/app_router.dart';
+import 'package:verify_app/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.initialize();
   runApp(
     MultiRepositoryProvider(
       providers: [
