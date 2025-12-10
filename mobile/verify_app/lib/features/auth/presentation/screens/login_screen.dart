@@ -242,9 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () {
-                                  context.read<AuthBloc>().add(
-                                    ForgotPinEvent(),
-                                  );
+                                  context.router.push(const ForgotPinRoute());
                                 },
                                 child: const Text(
                                   'Забыли PIN?',

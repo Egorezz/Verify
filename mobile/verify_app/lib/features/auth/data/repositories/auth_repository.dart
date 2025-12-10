@@ -118,4 +118,76 @@ class AuthRepository {
       return null;
     }
   }
+
+  Future<void> savePin(String pin) async {
+    final pinHash = PinHasher.hash(pin);
+    await _storage.write(key: _keyPinHash, value: pinHash);
+  }
+
+  Future<bool> verifyCredentials(String email, String password) async {
+    try {
+      print('Начало проверки учетных данных');
+
+      // Получаем сохраненные данные текущего пользователя
+      final savedEmail = await _storage.read(key: _keyLogin);
+      final token = await getAuthToken();
+
+      print('Сохраненный email: $savedEmail');
+      print('Введенный email: $email');
+      print('Токен есть: ${token != null}');
+
+      if (savedEmail == null || token == null) {
+        print('Ошибка: нет сохраненных данных');
+        return false;
+      }
+
+      // Проверяем, что email совпадает с текущим пользователем
+      if (savedEmail != email) {
+        print('Ошибка: email не совпадает');
+        return false;
+      }
+
+      print('Отправляем запрос на /auth/change-pin');
+
+      // Проверяем email и пароль на backend
+      final response = await _dio.get(
+        '/auth/change-pin',
+        data: {'email': email, 'password': password},
+        options: Options(
+          contentType: Headers.jsonContentType,
+          validateStatus: (status) => status == 200 || status == 401,
+        ),
+      );
+
+      print('Ответ сервера: ${response.statusCode}');
+      print('Данные ответа: ${response.data}');
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Ошибка в verifyCredentials: $e');
+      return false;
+    }
+  }
+
+  Future<bool> validateToken() async {
+    final token = await getAuthToken();
+    if (token == null) return false;
+
+    try {
+      final response = await _dio.get(
+        '/secured/validate',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          validateStatus: (status) => status == 200 || status == 401,
+        ),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<String?> getSavedEmail() async {
+    return await _storage.read(key: _keyLogin);
+  }
 }

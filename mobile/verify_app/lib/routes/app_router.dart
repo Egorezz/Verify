@@ -8,6 +8,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: WelcomeRoute.page, path: '/', initial: true),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegistrationRoute.page, path: '/register'),
+    AutoRoute(page: ForgotPinRoute.page, path: '/forgot-pin'),
+    AutoRoute(page: SetNewPinRoute.page, path: '/set-new-pin'),
     AutoRoute(page: MainRoute.page, path: '/main'),
     AutoRoute(page: HistoryRoute.page, path: '/history'),
   ];

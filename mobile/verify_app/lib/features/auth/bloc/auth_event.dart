@@ -11,3 +11,14 @@ class LoginEvent extends AuthEvent {
 }
 
 class ForgotPinEvent extends AuthEvent {}
+
+class SetNewPinEvent extends AuthEvent {
+  final String pin;
+  SetNewPinEvent(this.pin);
+}
+
+class VerifyCredentialsEvent extends AuthEvent {
+  final String email;
+  final String password;
+  VerifyCredentialsEvent(this.email, this.password);
+}
