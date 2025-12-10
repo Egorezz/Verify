@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:verify_app/features/verification/data/repositories/verification_repository.dart';
 import 'package:verify_app/features/verification/domain/entities/document_history_item.dart';
 
@@ -15,11 +16,102 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   List<DocumentHistoryItem> _history = [];
   bool _isLoading = true;
+  bool _isAuthenticated = false;
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    _authenticateWithBiometrics();
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    try {
+      final bool canCheckBiometrics = await _localAuth.canCheckBiometrics;
+      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      
+      print('Можно проверить биометрию: $canCheckBiometrics');
+      print('Доступные методы: $availableBiometrics');
+      
+      if (!canCheckBiometrics || availableBiometrics.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.fingerprint,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Биометрия не настроена',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Настройте отпечаток пальца в настройках',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.settings,
+                      color: Colors.white70,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+              backgroundColor: Colors.orange.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              margin: const EdgeInsets.all(16),
+              elevation: 8,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+        setState(() => _isAuthenticated = true);
+        _loadHistory();
+        return;
+      }
+
+      final bool didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Подтвердите личность для доступа к истории',
+      );
+
+      if (didAuthenticate) {
+        setState(() => _isAuthenticated = true);
+        _loadHistory();
+      } else {
+        if (mounted) {
+          context.router.pop();
+        }
+      }
+    } catch (e) {
+      print('Ошибка биометрии: $e');
+      setState(() => _isAuthenticated = true);
+      _loadHistory();
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -48,6 +140,40 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isAuthenticated) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF6C5CE7), Color(0xFFA45CE7)],
+            ),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.fingerprint,
+                  size: 80,
+                  color: Colors.white,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Аутентификация...',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
