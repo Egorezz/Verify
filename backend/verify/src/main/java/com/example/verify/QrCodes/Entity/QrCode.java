@@ -12,10 +12,8 @@ public class QrCode {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column (name = "userId")
-    private Long userId;
-    @Column (name = "docName")
-    private String docName;
+    @Column (name = "docType")
+    private String docType;
     @Column (name = "endDate")
     private LocalDate endDate;
 }

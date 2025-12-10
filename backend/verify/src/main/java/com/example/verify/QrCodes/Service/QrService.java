@@ -19,16 +19,12 @@ public class QrService {
     public DocStatus getStatus(Long id) throws EntityNotFoundException {
         QrCode qrCode = qrRepository.findById(id).orElseThrow(() -> new EntityNotFoundException());
         LocalDate endDate = qrCode.getEndDate();
-        LocalDate weekFromNow = LocalDate.now().plusDays(7);
+        if (LocalDate.now().isEqual(endDate.minusDays(7)) || (LocalDate.now().isAfter(endDate.minusDays(7)) && LocalDate.now().isBefore(endDate)) || LocalDate.now().isEqual(endDate)) {
+            return DocStatus.EXPIRING_SOON;
+        } else
         if (endDate.isBefore(LocalDate.now())) {
             return DocStatus.INVALID;
-        }
-        if (endDate.isEqual(LocalDate.now())) {
-            return DocStatus.EXPIRING_SOON;
-        }
-        if (endDate.isBefore(LocalDate.now().plusDays(7)) || endDate.isEqual(weekFromNow)) {
-            return DocStatus.EXPIRING_SOON;
-        }
+        } else
         return DocStatus.VALID;
     }
 }
